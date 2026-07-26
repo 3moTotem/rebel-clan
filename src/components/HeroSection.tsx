@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { ChevronDown, Users, MessageSquare } from "lucide-react";
-import Image from "next/image";
 
 export default function HeroSection() {
   return (
@@ -35,13 +34,10 @@ export default function HeroSection() {
             <div
               className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden mx-auto glow-green"
             >
-              <Image
-                src="/rebel-logo.png"
+              <img
+                src="/rebel-clan/rebel-logo.png"
                 alt="Rebel Clan Logo"
-                width={144}
-                height={144}
                 className="w-full h-full object-cover"
-                priority
               />
             </div>
             <div

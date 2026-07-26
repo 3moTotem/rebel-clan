@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   keywords: ["Rebel Clan", "Minecraft", "Clan", "Roster", "Gaming"],
   authors: [{ name: "3moTotem" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/rebel-clan/favicon.ico",
   },
 };
 
