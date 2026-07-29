@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import EliteSection from "@/components/EliteSection";
 import ClanMembers from "@/components/ClanMembers";
+import ClanMemories from "@/components/ClanMemories";
 import PlayerProfile from "@/components/PlayerProfile";
 import ClanStatistics from "@/components/ClanStatistics";
 import Footer from "@/components/Footer";
@@ -44,6 +45,7 @@ export default function Home() {
         <HeroSection />
         <EliteSection players={leaderPlayers} onSelectPlayer={handleSelectPlayer} />
         <ClanMembers players={players} onSelectPlayer={handleSelectPlayer} />
+        <ClanMemories />
         <ClanStatistics stats={stats} />
       </main>
       <Footer />
