@@ -81,11 +81,20 @@ export default function AdminPage() {
         saveToCache(data);
       }
     });
-    fetchMemoriesFromAPI().then((data) => {
-      if (data) setMemories(data);
-      else {
-        const cached = loadMemoriesCache();
-        if (cached) setMemories(cached);
+    Promise.all([
+      fetchMemoriesFromAPI(),
+      Promise.resolve(loadMemoriesCache()),
+    ]).then(([api, cache]) => {
+      const base = api ?? cache ?? DEFAULT_MEMORIES;
+      if (cache && api) {
+        // Prefer cached images over API (API may lack large images)
+        setMemories(base.map((m) => {
+          const cached = cache.find((c) => c.key === m.key);
+          if (!m.image && cached?.image) return { ...m, image: cached.image };
+          return m;
+        }));
+      } else {
+        setMemories(base);
       }
     });
   }, []);

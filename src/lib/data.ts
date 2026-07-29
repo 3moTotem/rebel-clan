@@ -55,11 +55,22 @@ export async function fetchMemoriesFromAPI(): Promise<MemoryItem[] | null> {
 }
 
 export async function fetchMemoriesWithFallback(): Promise<MemoryItem[]> {
-  const api = await fetchMemoriesFromAPI();
-  if (api) return api;
-  const cache = loadMemoriesCache();
-  if (cache) return cache;
-  return DEFAULT_MEMORIES;
+  const [api, cache] = await Promise.all([
+    fetchMemoriesFromAPI(),
+    Promise.resolve(loadMemoriesCache()),
+  ]);
+  if (!api && !cache) return DEFAULT_MEMORIES;
+  // Merge: prefer API for metadata, localStorage for images (in case API images are too large)
+  const base = api ?? cache ?? DEFAULT_MEMORIES;
+  if (cache) {
+    return base.map((m) => {
+      const cached = cache.find((c) => c.key === m.key);
+      // Use cached image if API has no image
+      if (!m.image && cached?.image) return { ...m, image: cached.image };
+      return m;
+    });
+  }
+  return base;
 }
 
 export async function saveMemoriesToAPI(memories: MemoryItem[]): Promise<boolean> {
