@@ -17,7 +17,6 @@ const GRADIENT_MAP: Record<string, string> = {
 export default function ClanMemories() {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [zoomed, setZoomed] = useState<string | null>(null);
-  const [zoomedTitle, setZoomedTitle] = useState("");
 
   useEffect(() => {
     fetchMemoriesWithFallback().then(setMemories);
@@ -82,10 +81,7 @@ export default function ClanMemories() {
                     <div
                       className="relative h-48 overflow-hidden cursor-pointer"
                       onClick={() => {
-                        if (mem.image) {
-                          setZoomed(mem.image);
-                          setZoomedTitle(mem.title);
-                        }
+                        if (mem.image) setZoomed(mem.image);
                       }}
                     >
                       {mem.image ? (
@@ -139,12 +135,12 @@ export default function ClanMemories() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-            onClick={() => { setZoomed(null); setZoomedTitle(""); }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+            onClick={() => setZoomed(null)}
           >
             <button
               className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              onClick={() => { setZoomed(null); setZoomedTitle(""); }}
+              onClick={() => setZoomed(null)}
             >
               <X className="w-6 h-6" />
             </button>
@@ -153,17 +149,14 @@ export default function ClanMemories() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="max-w-[90vw] max-h-[90vh] flex flex-col items-center"
+              className="max-w-[100vw] max-h-[100vh] flex items-center justify-center p-4"
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={zoomed}
-                alt={zoomedTitle}
-                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                alt=""
+                className="max-w-full max-h-full object-contain"
               />
-              <p className="text-white text-sm mt-3 font-medium tracking-wide">
-                {zoomedTitle}
-              </p>
             </motion.div>
           </motion.div>
         )}

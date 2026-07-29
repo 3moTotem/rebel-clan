@@ -65,15 +65,13 @@ export async function fetchMemoriesWithFallback(): Promise<MemoryItem[]> {
 export async function saveMemoriesToAPI(memories: MemoryItem[]): Promise<boolean> {
   saveMemoriesCache(memories);
   try {
-    const res = await fetch(MEMORIES_URL, {
+    await fetch(MEMORIES_URL, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(memories),
     });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  } catch {}
+  return true;
 }
 
 export async function fetchPlayersFromAPI(): Promise<Player[] | null> {
