@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, Rank, Status, Kit, RANK_CONFIG, KIT_LIST } from "@/types/clan";
-import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
+import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, loadMemoriesCache, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
 import { initialPlayers } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
@@ -83,6 +83,10 @@ export default function AdminPage() {
     });
     fetchMemoriesFromAPI().then((data) => {
       if (data) setMemories(data);
+      else {
+        const cached = loadMemoriesCache();
+        if (cached) setMemories(cached);
+      }
     });
   }, []);
 

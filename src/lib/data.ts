@@ -25,6 +25,23 @@ export const DEFAULT_MEMORIES: MemoryItem[] = [
   { key: "raid-victory", title: "Raid Victory", date: "January 2026", description: "An epic 10v10 raid victory that cemented our dominance.", image: null },
 ];
 
+const MEMORIES_CACHE_KEY = "rebel-clan-memories";
+
+export function loadMemoriesCache(): MemoryItem[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(MEMORIES_CACHE_KEY);
+    if (stored) return JSON.parse(stored) as MemoryItem[];
+  } catch {}
+  return null;
+}
+
+export function saveMemoriesCache(memories: MemoryItem[]) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(MEMORIES_CACHE_KEY, JSON.stringify(memories));
+  }
+}
+
 export async function fetchMemoriesFromAPI(): Promise<MemoryItem[] | null> {
   try {
     const res = await fetch(MEMORIES_URL);
@@ -37,7 +54,16 @@ export async function fetchMemoriesFromAPI(): Promise<MemoryItem[] | null> {
   }
 }
 
+export async function fetchMemoriesWithFallback(): Promise<MemoryItem[]> {
+  const api = await fetchMemoriesFromAPI();
+  if (api) return api;
+  const cache = loadMemoriesCache();
+  if (cache) return cache;
+  return DEFAULT_MEMORIES;
+}
+
 export async function saveMemoriesToAPI(memories: MemoryItem[]): Promise<boolean> {
+  saveMemoriesCache(memories);
   try {
     const res = await fetch(MEMORIES_URL, {
       method: "PUT",

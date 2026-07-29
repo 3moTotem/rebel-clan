@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Camera, Calendar } from "lucide-react";
-import { MemoryItem, fetchMemoriesFromAPI, DEFAULT_MEMORIES } from "@/lib/data";
+import { MemoryItem, fetchMemoriesWithFallback } from "@/lib/data";
 
 const GRADIENT_MAP: Record<string, string> = {
   "first-victory": "linear-gradient(135deg, #CD853F, #8B5A2B)",
@@ -15,12 +15,10 @@ const GRADIENT_MAP: Record<string, string> = {
 };
 
 export default function ClanMemories() {
-  const [memories, setMemories] = useState<MemoryItem[]>(DEFAULT_MEMORIES);
+  const [memories, setMemories] = useState<MemoryItem[]>([]);
 
   useEffect(() => {
-    fetchMemoriesFromAPI().then((data) => {
-      if (data) setMemories(data);
-    });
+    fetchMemoriesWithFallback().then(setMemories);
   }, []);
 
   return (
