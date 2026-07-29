@@ -113,9 +113,6 @@ export default function ClanMemories() {
                       <Calendar className="w-3.5 h-3.5" />
                       {mem.date}
                     </div>
-                    <p className="text-sm text-[#A89B8E] leading-relaxed">
-                      {mem.description}
-                    </p>
                   </div>
                 </div>
               </motion.div>
