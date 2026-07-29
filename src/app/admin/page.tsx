@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, Rank, Status, Kit, RANK_CONFIG, KIT_LIST } from "@/types/clan";
 import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
@@ -70,6 +70,8 @@ export default function AdminPage() {
   const [syncStatus, setSyncStatus] = useState<"saved" | "error" | null>(null);
   const [memories, setMemories] = useState<MemoryItem[]>(DEFAULT_MEMORIES);
   const [memoriesSyncing, setMemoriesSyncing] = useState(false);
+  const memoriesRef = useRef(memories);
+  memoriesRef.current = memories;
 
   useEffect(() => {
     fetchPlayersFromAPI().then((data) => {
@@ -103,34 +105,36 @@ export default function AdminPage() {
 
   const syncMemoriesToAPI = async (next: MemoryItem[]) => {
     setMemoriesSyncing(true);
-    setMemories(next);
     await saveMemoriesToAPI(next);
     setMemoriesSyncing(false);
   };
 
   const updateMemoryField = (key: string, field: keyof MemoryItem, value: string) => {
-    setMemories((prev) => {
-      const next = prev.map((m) => (m.key === key ? { ...m, [field]: value } : m));
-      return next;
-    });
+    const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, [field]: value } : m));
+    setMemories(next);
+    syncMemoriesToAPI(next);
   };
 
   const handleDeleteMemoryImage = (key: string) => {
-    setMemories((prev) => {
-      const next = prev.map((m) => (m.key === key ? { ...m, image: null } : m));
-      syncMemoriesToAPI(next);
-      return next;
-    });
+    const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: null } : m));
+    setMemories(next);
+    syncMemoriesToAPI(next);
   };
 
   const handleMemoryImageUpload = (key: string, file: File) => {
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
-      setMemories((prev) => {
-        const next = prev.map((m) => (m.key === key ? { ...m, image: dataUrl } : m));
-        return next;
-      });
+      if (!dataUrl) return;
+
+      // Compress: resize to max 800px width, quality 0.6
+      const compressed = await compressImage(dataUrl, 800, 0.6);
+
+      const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: compressed } : m));
+      setMemories(next);
+      setMemoriesSyncing(true);
+      const ok = await saveMemoriesToAPI(next);
+      setMemoriesSyncing(false);
     };
     reader.readAsDataURL(file);
   };
@@ -851,4 +855,20 @@ function PlayerForm({
       </div>
     </div>
   );
+}
+
+function compressImage(dataUrl: string, maxW: number, quality: number): Promise<string> {
+  return new Promise((resolve) => {
+    const img = document.createElement("img");
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL("image/jpeg", quality));
+    };
+    img.src = dataUrl;
+  });
 }
