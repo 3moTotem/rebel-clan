@@ -70,6 +70,7 @@ export default function AdminPage() {
   const [syncStatus, setSyncStatus] = useState<"saved" | "error" | null>(null);
   const [memories, setMemories] = useState<MemoryItem[]>(DEFAULT_MEMORIES);
   const [memoriesSyncing, setMemoriesSyncing] = useState(false);
+  const [memoriesSyncStatus, setMemoriesSyncStatus] = useState<"saved" | "error" | null>(null);
   const memoriesRef = useRef(memories);
   memoriesRef.current = memories;
 
@@ -105,8 +106,11 @@ export default function AdminPage() {
 
   const syncMemoriesToAPI = async (next: MemoryItem[]) => {
     setMemoriesSyncing(true);
-    await saveMemoriesToAPI(next);
+    setMemoriesSyncStatus(null);
+    const ok = await saveMemoriesToAPI(next);
     setMemoriesSyncing(false);
+    setMemoriesSyncStatus(ok ? "saved" : "error");
+    setTimeout(() => setMemoriesSyncStatus(null), 3000);
   };
 
   const updateMemoryField = (key: string, field: keyof MemoryItem, value: string) => {
@@ -127,14 +131,12 @@ export default function AdminPage() {
       const dataUrl = ev.target?.result as string;
       if (!dataUrl) return;
 
-      // Compress: resize to max 800px width, quality 0.6
-      const compressed = await compressImage(dataUrl, 800, 0.6);
+      // Compress: resize to max 250px width, quality 0.4 (small enough for jsonblob)
+      const compressed = await compressImage(dataUrl, 250, 0.4);
 
       const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: compressed } : m));
       setMemories(next);
-      setMemoriesSyncing(true);
-      const ok = await saveMemoriesToAPI(next);
-      setMemoriesSyncing(false);
+      syncMemoriesToAPI(next);
     };
     reader.readAsDataURL(file);
   };
@@ -560,6 +562,18 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              {memoriesSyncStatus === "saved" && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-900/30 border border-green-700/30 text-xs text-green-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Saved
+                </div>
+              )}
+              {memoriesSyncStatus === "error" && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-xs text-red-400">
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Save Failed
+                </div>
+              )}
               {memoriesSyncing && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#231D17] border border-[#3D3228] text-xs text-[#A89B8E]">
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
