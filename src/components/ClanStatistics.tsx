@@ -57,11 +57,12 @@ function AnimatedCounter({
 
 export default function ClanStatistics({ stats }: ClanStatisticsProps) {
   const rankStats: { rank: Rank; count: number; icon: typeof Shield }[] = [
-    { rank: "elite", count: stats.eliteMembers, icon: Crown },
-    { rank: "master", count: stats.masterMembers, icon: Sword },
-    { rank: "veteran", count: stats.veteranMembers, icon: ShieldCheck },
-    { rank: "skilled", count: stats.skilledMembers, icon: Zap },
-    { rank: "rookie", count: stats.rookieMembers, icon: Star },
+    { rank: "leader", count: stats.leaderMembers, icon: Crown },
+    { rank: "moderator", count: stats.moderatorMembers, icon: Sword },
+    { rank: "staff", count: stats.staffMembers, icon: ShieldCheck },
+    { rank: "builder", count: stats.builderMembers, icon: Zap },
+    { rank: "youtuber", count: stats.youtuberMembers, icon: Star },
+    { rank: "member", count: stats.memberMembers, icon: Users },
   ];
 
   const generalStats = [
@@ -132,7 +133,7 @@ export default function ClanStatistics({ stats }: ClanStatisticsProps) {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {rankStats.map((stat, i) => {
             const config = RANK_CONFIG[stat.rank];
             return (

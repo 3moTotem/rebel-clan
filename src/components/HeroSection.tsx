@@ -110,7 +110,7 @@ export default function HeroSection() {
           </motion.a>
 
           <motion.a
-            href="#elite"
+            href="#leader"
             className="flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300"
             style={{
               border: "1px solid rgba(212, 197, 178, 0.3)",
@@ -124,7 +124,7 @@ export default function HeroSection() {
             }}
             whileTap={{ scale: 0.95 }}
           >
-            Explore the Elite
+            Meet the Leader
           </motion.a>
 
           <motion.a

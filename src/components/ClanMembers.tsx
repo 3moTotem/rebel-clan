@@ -24,11 +24,12 @@ export default function ClanMembers({
 
   const filters: { label: string; value: Rank | "all" }[] = [
     { label: "All", value: "all" },
-    { label: "Elite", value: "elite" },
-    { label: "Master", value: "master" },
-    { label: "Veteran", value: "veteran" },
-    { label: "Skilled", value: "skilled" },
-    { label: "Rookie", value: "rookie" },
+    { label: "Leader", value: "leader" },
+    { label: "Moderator", value: "moderator" },
+    { label: "Staff", value: "staff" },
+    { label: "Builder", value: "builder" },
+    { label: "Youtuber", value: "youtuber" },
+    { label: "Member", value: "member" },
   ];
 
   const sortOptions: { label: string; value: SortOption }[] = [

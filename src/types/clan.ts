@@ -1,4 +1,4 @@
-export type Rank = "elite" | "master" | "veteran" | "skilled" | "rookie";
+export type Rank = "leader" | "moderator" | "staff" | "builder" | "youtuber" | "member";
 
 export type Status = "online" | "offline" | "away";
 
@@ -29,11 +29,12 @@ export interface Player {
 export interface ClanStats {
   totalMembers: number;
   onlineMembers: number;
-  eliteMembers: number;
-  masterMembers: number;
-  veteranMembers: number;
-  skilledMembers: number;
-  rookieMembers: number;
+  leaderMembers: number;
+  moderatorMembers: number;
+  staffMembers: number;
+  builderMembers: number;
+  youtuberMembers: number;
+  memberMembers: number;
   clanPower: number;
   clanLevel: number;
 }
@@ -61,39 +62,46 @@ export const RANK_CONFIG: Record<
     order: number;
   }
 > = {
-  elite: {
-    label: "Elite",
+  leader: {
+    label: "Leader",
     color: "#CD853F",
     glowColor: "rgba(205, 133, 63, 0.4)",
     powerBonus: 500,
     order: 1,
   },
-  master: {
-    label: "Master",
+  moderator: {
+    label: "Moderator",
     color: "#A0724A",
     glowColor: "rgba(160, 114, 74, 0.4)",
     powerBonus: 300,
     order: 2,
   },
-  veteran: {
-    label: "Veteran",
+  staff: {
+    label: "Staff",
     color: "#8B5A2B",
     glowColor: "rgba(139, 90, 43, 0.4)",
     powerBonus: 200,
     order: 3,
   },
-  skilled: {
-    label: "Skilled",
+  builder: {
+    label: "Builder",
     color: "#D4C5B2",
     glowColor: "rgba(212, 197, 178, 0.4)",
     powerBonus: 100,
     order: 4,
   },
-  rookie: {
-    label: "Rookie",
+  youtuber: {
+    label: "Youtuber",
+    color: "#FF6B6B",
+    glowColor: "rgba(255, 107, 107, 0.4)",
+    powerBonus: 80,
+    order: 5,
+  },
+  member: {
+    label: "Member",
     color: "#A89B8E",
     glowColor: "rgba(168, 155, 142, 0.3)",
     powerBonus: 0,
-    order: 5,
+    order: 6,
   },
 };

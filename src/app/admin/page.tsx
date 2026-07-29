@@ -48,7 +48,7 @@ interface FormState {
 const defaultForm: FormState = {
   minecraftUsername: "",
   discordUsername: "",
-  rank: "rookie",
+  rank: "member",
   kit: "",
   powerLevel: 1000,
   joinDate: "January 2026",
@@ -314,7 +314,7 @@ export default function AdminPage() {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
-          {(["elite", "master", "veteran", "skilled", "rookie"] as Rank[]).map((rank) => {
+            {(["leader", "moderator", "staff", "builder", "youtuber", "member"] as Rank[]).map((rank) => {
             const config = RANK_CONFIG[rank];
             const count = players.filter((p) => p.rank === rank).length;
             return (

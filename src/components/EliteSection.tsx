@@ -18,7 +18,7 @@ export default function EliteSection({
   if (players.length === 0) return null;
 
   return (
-    <section id="elite" className="relative py-20 px-4 overflow-hidden">
+    <section id="leader" className="relative py-20 px-4 overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-20">
         <div
           className="w-full h-full rounded-full blur-3xl"
@@ -45,11 +45,11 @@ export default function EliteSection({
             </span>
           </div>
           <h2 className="text-4xl md:text-6xl font-black text-[#FFFFFF] mb-4">
-            Elite{" "}
-            <span className="text-gradient-gold">Members</span>
+            Leader{" "}
+            <span className="text-gradient-gold">Rank</span>
           </h2>
           <p className="text-[#A89B8E] max-w-xl mx-auto">
-            The most dedicated and skilled warriors of Rebel Clan
+            The highest ranking members of Rebel Clan
           </p>
         </motion.div>
 

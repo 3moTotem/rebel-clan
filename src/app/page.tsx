@@ -26,8 +26,8 @@ export default function Home() {
   }, []);
 
   const stats = useMemo(() => getClanStats(players), [players]);
-  const elitePlayers = useMemo(
-    () => players.filter((p) => p.rank === "elite"),
+  const leaderPlayers = useMemo(
+    () => players.filter((p) => p.rank === "leader"),
     [players]
   );
 
@@ -42,7 +42,7 @@ export default function Home() {
       <Navbar />
       <main className="relative z-10">
         <HeroSection />
-        <EliteSection players={elitePlayers} onSelectPlayer={handleSelectPlayer} />
+        <EliteSection players={leaderPlayers} onSelectPlayer={handleSelectPlayer} />
         <ClanMembers players={players} onSelectPlayer={handleSelectPlayer} />
         <ClanStatistics stats={stats} />
       </main>
