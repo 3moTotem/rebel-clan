@@ -2,7 +2,53 @@ import { Player, ClanStats, Rank, Kit, Status } from "@/types/clan";
 
 export const API_BLOB_ID = "019faefe-2d33-7858-97a0-6f97da89258d";
 export const API_URL = `https://jsonblob.com/api/jsonBlob/${API_BLOB_ID}`;
+
+export const MEMORIES_BLOB_ID = "019faf36-82c9-7b0d-b3d3-7e708f602ec8";
+export const MEMORIES_URL = `https://jsonblob.com/api/jsonBlob/${MEMORIES_BLOB_ID}`;
+
 const STORAGE_KEY = "rebel-clan-players";
+
+export interface MemoryItem {
+  key: string;
+  title: string;
+  date: string;
+  description: string;
+  image: string | null;
+}
+
+export const DEFAULT_MEMORIES: MemoryItem[] = [
+  { key: "first-victory", title: "First Victory", date: "March 2025", description: "Our first clan battle win — the rebellion announced itself to the server.", image: null },
+  { key: "dragon-conquest", title: "Dragon Conquest", date: "May 2025", description: "Together we felled the Ender Dragon for the first time as a clan.", image: null },
+  { key: "alliance-summit", title: "Alliance Summit", date: "July 2025", description: "Forged powerful alliances that shaped the future of our realm.", image: null },
+  { key: "championship-glory", title: "Championship Glory", date: "September 2025", description: "xRebelKing claimed the top spot in the server-wide PvP tournament.", image: null },
+  { key: "the-great-build", title: "The Great Build", date: "November 2025", description: "Completed the Grand Rebel Fortress — our legendary base.", image: null },
+  { key: "raid-victory", title: "Raid Victory", date: "January 2026", description: "An epic 10v10 raid victory that cemented our dominance.", image: null },
+];
+
+export async function fetchMemoriesFromAPI(): Promise<MemoryItem[] | null> {
+  try {
+    const res = await fetch(MEMORIES_URL);
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    if (!Array.isArray(data)) return null;
+    return data as MemoryItem[];
+  } catch {
+    return null;
+  }
+}
+
+export async function saveMemoriesToAPI(memories: MemoryItem[]): Promise<boolean> {
+  try {
+    const res = await fetch(MEMORIES_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(memories),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 export async function fetchPlayersFromAPI(): Promise<Player[] | null> {
   try {

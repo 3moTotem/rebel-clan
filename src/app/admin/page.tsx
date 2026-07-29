@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, Rank, Status, Kit, RANK_CONFIG, KIT_LIST } from "@/types/clan";
-import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache } from "@/lib/data";
+import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
 import { initialPlayers } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import {
   Pencil,
   Trash2,
   Save,
+  Camera,
   UserPlus,
   User,
   ArrowLeft,
@@ -67,6 +68,8 @@ export default function AdminPage() {
   const [form, setForm] = useState<FormState>(defaultForm);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<"saved" | "error" | null>(null);
+  const [memories, setMemories] = useState<MemoryItem[]>(DEFAULT_MEMORIES);
+  const [memoriesSyncing, setMemoriesSyncing] = useState(false);
 
   useEffect(() => {
     fetchPlayersFromAPI().then((data) => {
@@ -74,6 +77,9 @@ export default function AdminPage() {
         setPlayers(data);
         saveToCache(data);
       }
+    });
+    fetchMemoriesFromAPI().then((data) => {
+      if (data) setMemories(data);
     });
   }, []);
 
@@ -93,6 +99,40 @@ export default function AdminPage() {
       syncToAPI(next);
       return next;
     });
+  };
+
+  const syncMemoriesToAPI = async (next: MemoryItem[]) => {
+    setMemoriesSyncing(true);
+    setMemories(next);
+    await saveMemoriesToAPI(next);
+    setMemoriesSyncing(false);
+  };
+
+  const updateMemoryField = (key: string, field: keyof MemoryItem, value: string) => {
+    setMemories((prev) => {
+      const next = prev.map((m) => (m.key === key ? { ...m, [field]: value } : m));
+      return next;
+    });
+  };
+
+  const handleDeleteMemoryImage = (key: string) => {
+    setMemories((prev) => {
+      const next = prev.map((m) => (m.key === key ? { ...m, image: null } : m));
+      syncMemoriesToAPI(next);
+      return next;
+    });
+  };
+
+  const handleMemoryImageUpload = (key: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setMemories((prev) => {
+        const next = prev.map((m) => (m.key === key ? { ...m, image: dataUrl } : m));
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleLogin = () => {
@@ -503,6 +543,141 @@ export default function AdminPage() {
             <p className="text-[#A89B8E]">No members yet. Add your first player!</p>
           </div>
         )}
+
+        {/* ---- MEMORIES MANAGEMENT ---- */}
+        <div className="mt-16">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-[#FFFFFF] tracking-wide">
+                MEMORIES <span className="text-gradient">MANAGEMENT</span>
+              </h2>
+              <p className="text-[#A89B8E] text-sm mt-1">
+                Upload images, edit dates and descriptions for each memory card
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {memoriesSyncing && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#231D17] border border-[#3D3228] text-xs text-[#A89B8E]">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  Saving...
+                </div>
+              )}
+              <motion.button
+                onClick={() => syncMemoriesToAPI(memories)}
+                disabled={memoriesSyncing}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#8B5A2B] to-[#5C3317] text-[#FFFFFF] font-semibold shadow-lg transition-all hover:from-[#A0724A] hover:to-[#8B5A2B] disabled:opacity-40"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Save className="w-4 h-4" />
+                Save All Changes
+              </motion.button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {memories.map((mem) => (
+              <MemoryCardEditor
+                key={mem.key}
+                memory={mem}
+                onFieldChange={updateMemoryField}
+                onImageUpload={handleMemoryImageUpload}
+                onDeleteImage={handleDeleteMemoryImage}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemoryCardEditor({
+  memory,
+  onFieldChange,
+  onImageUpload,
+  onDeleteImage,
+}: {
+  memory: MemoryItem;
+  onFieldChange: (key: string, field: keyof MemoryItem, value: string) => void;
+  onImageUpload: (key: string, file: File) => void;
+  onDeleteImage: (key: string) => void;
+}) {
+  const inputClass =
+    "w-full px-3 py-2 rounded-lg bg-[#1A1410] border border-[#3D3228] text-[#FFFFFF] placeholder-[#A89B8E] focus:outline-none focus:ring-2 focus:ring-[#8B5A2B]/30 transition-all text-sm";
+  const GRADIENT_MAP: Record<string, string> = {
+    "first-victory": "linear-gradient(135deg, #CD853F, #8B5A2B)",
+    "dragon-conquest": "linear-gradient(135deg, #5C3317, #1A1410)",
+    "alliance-summit": "linear-gradient(135deg, #A0724A, #5C3317)",
+    "championship-glory": "linear-gradient(135deg, #D4C5B2, #8B5A2B)",
+    "the-great-build": "linear-gradient(135deg, #8B5A2B, #1A1410)",
+    "raid-victory": "linear-gradient(135deg, #A89B8E, #5C3317)",
+  };
+
+  return (
+    <div
+      className="bg-[#231D17] rounded-xl overflow-hidden border border-[#3D3228]"
+    >
+      <div className="relative h-40 bg-[#1A1410]">
+        {memory.image ? (
+          <img
+            src={memory.image}
+            alt={memory.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{ background: GRADIENT_MAP[memory.key] || "linear-gradient(135deg, #CD853F, #8B5A2B)" }}
+          />
+        )}
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute bottom-2 right-2 flex gap-2">
+          <label className="p-2 rounded-lg bg-black/60 border border-white/20 cursor-pointer hover:bg-black/80 transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onImageUpload(memory.key, file);
+                }
+                e.target.value = "";
+              }}
+            />
+            <Camera className="w-4 h-4 text-white" />
+          </label>
+          {memory.image && (
+            <button
+              onClick={() => onDeleteImage(memory.key)}
+              className="p-2 rounded-lg bg-black/60 border border-red-500/40 cursor-pointer hover:bg-red-900/60 transition-colors"
+            >
+              <Trash2 className="w-4 h-4 text-red-400" />
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="p-4 space-y-3">
+        <h4 className="text-sm font-bold text-[#FFFFFF] tracking-wide">{memory.title}</h4>
+        <div>
+          <label className="block text-[10px] text-[#A89B8E] uppercase tracking-wider mb-1">Date</label>
+          <input
+            type="text"
+            value={memory.date}
+            onChange={(e) => onFieldChange(memory.key, "date", e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] text-[#A89B8E] uppercase tracking-wider mb-1">Description</label>
+          <textarea
+            value={memory.description}
+            onChange={(e) => onFieldChange(memory.key, "description", e.target.value)}
+            rows={2}
+            className={`${inputClass} resize-none`}
+          />
+        </div>
       </div>
     </div>
   );
