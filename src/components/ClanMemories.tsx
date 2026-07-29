@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, Calendar, Sword, Trophy, Shield, Mountain, Crosshair, Castle } from "lucide-react";
+import { Camera, Calendar } from "lucide-react";
 import { MemoryItem, fetchMemoriesFromAPI, DEFAULT_MEMORIES } from "@/lib/data";
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -12,15 +12,6 @@ const GRADIENT_MAP: Record<string, string> = {
   "championship-glory": "linear-gradient(135deg, #D4C5B2, #8B5A2B)",
   "the-great-build": "linear-gradient(135deg, #8B5A2B, #1A1410)",
   "raid-victory": "linear-gradient(135deg, #A89B8E, #5C3317)",
-};
-
-const ICON_MAP: Record<string, typeof Sword> = {
-  "first-victory": Sword,
-  "dragon-conquest": Trophy,
-  "alliance-summit": Shield,
-  "championship-glory": Crosshair,
-  "the-great-build": Castle,
-  "raid-victory": Mountain,
 };
 
 export default function ClanMemories() {
@@ -68,7 +59,6 @@ export default function ClanMemories() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {memories.map((mem, i) => {
-            const Icon = ICON_MAP[mem.key] || Sword;
             const gradient = GRADIENT_MAP[mem.key] || "linear-gradient(135deg, #CD853F, #8B5A2B)";
             return (
               <motion.div
@@ -103,16 +93,9 @@ export default function ClanMemories() {
                         />
                         <div className="absolute inset-0 opacity-20 pixel-pattern" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div
-                            className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                            style={{
-                              background: "rgba(255,255,255,0.1)",
-                              backdropFilter: "blur(4px)",
-                              border: "1px solid rgba(255,255,255,0.15)",
-                            }}
-                          >
-                            <Icon className="w-10 h-10 text-white" />
-                          </div>
+                          <span className="text-white font-bold text-lg tracking-wide" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+                            Screenshot {i + 1}
+                          </span>
                         </div>
                       </>
                     )}
