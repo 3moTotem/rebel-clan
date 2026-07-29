@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, Rank, Status, Kit, RANK_CONFIG, KIT_LIST } from "@/types/clan";
-import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, loadMemoriesCache, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
+import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache, fetchMemoriesFromAPI, saveMemoriesToAPI, loadMemoriesCache, saveMemoriesCache, type MemoryItem, DEFAULT_MEMORIES } from "@/lib/data";
 import { initialPlayers } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
@@ -135,10 +135,12 @@ export default function AdminPage() {
       const dataUrl = ev.target?.result as string;
       if (!dataUrl) return;
 
-      const compressed = await compressImage(dataUrl, 500, 0.75);
+      // High quality (1080px) for sharp display + zoom
+      const optimized = await compressImage(dataUrl, 1080, 0.9);
 
-      const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: compressed } : m));
+      const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: optimized } : m));
       setMemories(next);
+      saveMemoriesCache(next);
       syncMemoriesToAPI(next);
     };
     reader.readAsDataURL(file);
@@ -877,10 +879,8 @@ function PlayerForm({
 function compressImage(dataUrl: string, maxW: number, quality: number): Promise<string> {
   return new Promise((resolve) => {
     const img = document.createElement("img");
-    let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; resolve(dataUrl); }, 5000);
+    const timer = setTimeout(() => resolve(dataUrl), 15000);
     img.onload = () => {
-      if (timedOut) return;
       clearTimeout(timer);
       try {
         const c = document.createElement("canvas");
