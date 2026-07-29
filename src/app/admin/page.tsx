@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Player, Rank, Status, Kit, RANK_CONFIG, KIT_LIST } from "@/types/clan";
-import { getAvatarUrl, getSkinUrl, getKitInfo, sanitizePlayers } from "@/lib/data";
+import { getAvatarUrl, getSkinUrl, getKitInfo, fetchPlayersFromAPI, savePlayersToAPI, loadFromCache, saveToCache } from "@/lib/data";
 import { initialPlayers } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,37 +21,17 @@ import {
   EyeOff,
   LogOut,
   Zap,
+  RefreshCw,
+  Cloud,
+  CheckCircle2,
 } from "lucide-react";
 
-const STORAGE_KEY = "rebel-clan-players";
 const ADMIN_PASS_KEY = "rebel-clan-admin-auth";
 const ADMIN_PASSWORD = "rebel2026";
-
-function loadPlayers(): Player[] {
-  if (typeof window === "undefined") return initialPlayers;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const sanitized = sanitizePlayers(parsed);
-      if (sanitized.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
-        return sanitized;
-      }
-    }
-  } catch {}
-  return initialPlayers;
-}
 
 function checkAuth(): boolean {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(ADMIN_PASS_KEY) === ADMIN_PASSWORD;
-}
-
-function savePlayers(players: Player[]) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
-  }
 }
 
 interface FormState {
@@ -81,15 +61,36 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
-  const [players, setPlayers] = useState<Player[]>(loadPlayers);
+  const [players, setPlayers] = useState<Player[]>(() => loadFromCache() ?? initialPlayers);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState<FormState>(defaultForm);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<"saved" | "error" | null>(null);
+
+  useEffect(() => {
+    fetchPlayersFromAPI().then((data) => {
+      if (data) {
+        setPlayers(data);
+        saveToCache(data);
+      }
+    });
+  }, []);
+
+  const syncToAPI = async (next: Player[]) => {
+    setSyncing(true);
+    setSyncStatus(null);
+    saveToCache(next);
+    const ok = await savePlayersToAPI(next);
+    setSyncing(false);
+    setSyncStatus(ok ? "saved" : "error");
+    setTimeout(() => setSyncStatus(null), 3000);
+  };
 
   const updatePlayers = (updater: (prev: Player[]) => Player[]) => {
     setPlayers((prev) => {
       const next = updater(prev);
-      savePlayers(next);
+      syncToAPI(next);
       return next;
     });
   };
@@ -258,9 +259,27 @@ export default function AdminPage() {
             <span className="text-sm">Back to Site</span>
           </Link>
           <div className="flex items-center gap-3">
+            {syncStatus === "saved" && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-900/30 border border-green-700/30 text-xs text-green-400">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Saved
+              </div>
+            )}
+            {syncStatus === "error" && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-xs text-red-400">
+                <RefreshCw className="w-3.5 h-3.5" />
+                Sync Failed
+              </div>
+            )}
+            {syncing && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#231D17] border border-[#3D3228] text-xs text-[#A89B8E]">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                Syncing...
+              </div>
+            )}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#231D17] border border-[#3D3228] text-xs text-[#A0724A]">
-              <div className="w-2 h-2 rounded-full bg-[#A0724A] animate-pulse-glow" />
-              Admin Mode
+              <Cloud className="w-3.5 h-3.5" />
+              Live
             </div>
             <motion.button
               onClick={handleLogout}

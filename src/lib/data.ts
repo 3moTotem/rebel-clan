@@ -1,5 +1,52 @@
 import { Player, ClanStats, Rank, Kit, Status } from "@/types/clan";
 
+export const API_BLOB_ID = "019faefe-2d33-7858-97a0-6f97da89258d";
+export const API_URL = `https://jsonblob.com/api/jsonBlob/${API_BLOB_ID}`;
+const STORAGE_KEY = "rebel-clan-players";
+
+export async function fetchPlayersFromAPI(): Promise<Player[] | null> {
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    return sanitizePlayers(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function savePlayersToAPI(players: Player[]): Promise<boolean> {
+  try {
+    const res = await fetch(API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(players),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export function loadFromCache(): Player[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const sanitized = sanitizePlayers(parsed);
+      if (sanitized.length > 0) return sanitized;
+    }
+  } catch {}
+  return null;
+}
+
+export function saveToCache(players: Player[]) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+  }
+}
+
 export const initialPlayers: Player[] = [
   {
     id: "1",
