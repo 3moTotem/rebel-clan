@@ -44,7 +44,7 @@ export function saveMemoriesCache(memories: MemoryItem[]) {
 
 export async function fetchMemoriesFromAPI(): Promise<MemoryItem[] | null> {
   try {
-    const res = await fetch(MEMORIES_URL);
+    const res = await fetch(`${MEMORIES_URL}?t=${Date.now()}`);
     if (!res.ok) return null;
     const data: unknown = await res.json();
     if (!Array.isArray(data)) return null;
@@ -78,7 +78,7 @@ export async function saveMemoriesToAPI(memories: MemoryItem[]): Promise<boolean
 
 export async function fetchPlayersFromAPI(): Promise<Player[] | null> {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}?t=${Date.now()}`);
     if (!res.ok) return null;
     const data: unknown = await res.json();
     return sanitizePlayers(data);

@@ -878,15 +878,22 @@ function PlayerForm({
 function compressImage(dataUrl: string, maxW: number, quality: number): Promise<string> {
   return new Promise((resolve) => {
     const img = document.createElement("img");
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; resolve(dataUrl); }, 5000);
     img.onload = () => {
-      const c = document.createElement("canvas");
-      let w = img.width, h = img.height;
-      if (w > maxW) { h = h * maxW / w; w = maxW; }
-      c.width = w; c.height = h;
-      const ctx = c.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(c.toDataURL("image/jpeg", quality));
+      if (timedOut) return;
+      clearTimeout(timer);
+      try {
+        const c = document.createElement("canvas");
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = h * maxW / w; w = maxW; }
+        c.width = w; c.height = h;
+        const ctx = c.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL("image/jpeg", quality));
+      } catch { resolve(dataUrl); }
     };
+    img.onerror = () => { clearTimeout(timer); resolve(dataUrl); };
     img.src = dataUrl;
   });
 }
