@@ -1,23 +1,28 @@
 "use client";
 
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, Calendar, Sword, Trophy, Shield, Mountain, Crosshair, Castle } from "lucide-react";
+import { Camera, Calendar, Sword, Trophy, Shield, Mountain, Crosshair, Castle, Upload } from "lucide-react";
 
-interface Memory {
+const STORAGE_KEY = "rebel-clan-memories";
+
+interface MemoryData {
   title: string;
   date: string;
   description: string;
   gradient: string;
   icon: typeof Sword;
+  key: string;
 }
 
-const memories: Memory[] = [
+const memoryData: MemoryData[] = [
   {
     title: "First Victory",
     date: "March 2025",
     description: "Our first clan battle win — the rebellion announced itself to the server.",
     gradient: "linear-gradient(135deg, #CD853F, #8B5A2B)",
     icon: Sword,
+    key: "first-victory",
   },
   {
     title: "Dragon Conquest",
@@ -25,6 +30,7 @@ const memories: Memory[] = [
     description: "Together we felled the Ender Dragon for the first time as a clan.",
     gradient: "linear-gradient(135deg, #5C3317, #1A1410)",
     icon: Trophy,
+    key: "dragon-conquest",
   },
   {
     title: "Alliance Summit",
@@ -32,6 +38,7 @@ const memories: Memory[] = [
     description: "Forged powerful alliances that shaped the future of our realm.",
     gradient: "linear-gradient(135deg, #A0724A, #5C3317)",
     icon: Shield,
+    key: "alliance-summit",
   },
   {
     title: "Championship Glory",
@@ -39,6 +46,7 @@ const memories: Memory[] = [
     description: "xRebelKing claimed the top spot in the server-wide PvP tournament.",
     gradient: "linear-gradient(135deg, #D4C5B2, #8B5A2B)",
     icon: Crosshair,
+    key: "championship-glory",
   },
   {
     title: "The Great Build",
@@ -46,6 +54,7 @@ const memories: Memory[] = [
     description: "Completed the Grand Rebel Fortress — our legendary base.",
     gradient: "linear-gradient(135deg, #8B5A2B, #1A1410)",
     icon: Castle,
+    key: "the-great-build",
   },
   {
     title: "Raid Victory",
@@ -53,12 +62,61 @@ const memories: Memory[] = [
     description: "An epic 10v10 raid victory that cemented our dominance.",
     gradient: "linear-gradient(135deg, #A89B8E, #5C3317)",
     icon: Mountain,
+    key: "raid-victory",
   },
 ];
 
+function loadImages(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return {};
+}
+
+function saveImages(images: Record<string, string>) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(images));
+  }
+}
+
 export default function ClanMemories() {
+  const [images, setImages] = useState<Record<string, string>>(loadImages);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const activeKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    saveImages(images);
+  }, [images]);
+
+  const handleClick = useCallback((key: string) => {
+    activeKeyRef.current = key;
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFilePick = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeKeyRef.current) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setImages((prev) => ({ ...prev, [activeKeyRef.current!]: dataUrl }));
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }, []);
+
   return (
     <section id="memories" className="relative py-20 px-4 overflow-hidden">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFilePick}
+      />
+
       <div className="absolute top-0 right-0 w-[600px] h-[600px] opacity-10">
         <div
           className="w-full h-full rounded-full blur-3xl"
@@ -92,17 +150,19 @@ export default function ClanMemories() {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {memories.map((memory, i) => {
-            const Icon = memory.icon;
+          {memoryData.map((mem, i) => {
+            const Icon = mem.icon;
+            const uploadedSrc = images[mem.key];
             return (
               <motion.div
-                key={memory.title}
+                key={mem.key}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 whileHover={{ y: -8, scale: 1.02 }}
-                className="group"
+                className="group cursor-pointer"
+                onClick={() => handleClick(mem.key)}
               >
                 <div
                   className="rounded-2xl overflow-hidden card-hover"
@@ -113,23 +173,62 @@ export default function ClanMemories() {
                   }}
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <div
-                      className="absolute inset-0"
-                      style={{ background: memory.gradient }}
-                    />
-                    <div className="absolute inset-0 opacity-20 pixel-pattern" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div
-                        className="w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-125 group-hover:rotate-6"
-                        style={{
-                          background: "rgba(255,255,255,0.1)",
-                          backdropFilter: "blur(4px)",
-                          border: "1px solid rgba(255,255,255,0.15)",
-                        }}
-                      >
-                        <Icon className="w-10 h-10 text-white" />
-                      </div>
-                    </div>
+                    {uploadedSrc ? (
+                      <>
+                        <img
+                          src={uploadedSrc}
+                          alt={mem.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                          <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-0 group-hover:scale-100"
+                            style={{
+                              background: "rgba(255,255,255,0.15)",
+                              backdropFilter: "blur(4px)",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                            }}
+                          >
+                            <Upload className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: mem.gradient }}
+                        />
+                        <div className="absolute inset-0 opacity-20 pixel-pattern" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div
+                            className="w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-125 group-hover:rotate-6"
+                            style={{
+                              background: "rgba(255,255,255,0.1)",
+                              backdropFilter: "blur(4px)",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                            }}
+                          >
+                            <Icon className="w-10 h-10 text-white" />
+                          </div>
+                        </div>
+                        <div
+                          className="absolute bottom-0 left-0 right-0 flex items-center justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        >
+                          <div
+                            className="px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-white"
+                            style={{
+                              background: "rgba(0,0,0,0.5)",
+                              backdropFilter: "blur(4px)",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                            }}
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            Upload Screenshot
+                          </div>
+                        </div>
+                      </>
+                    )}
                     <div
                       className="absolute bottom-0 left-0 right-0 h-20"
                       style={{
@@ -142,16 +241,15 @@ export default function ClanMemories() {
                   <div className="p-5">
                     <div className="flex items-center gap-2 text-xs text-[#A89B8E] mb-3">
                       <Calendar className="w-3.5 h-3.5" />
-                      {memory.date}
+                      {mem.date}
                     </div>
                     <h3
                       className="text-lg font-bold text-[#FFFFFF] mb-2 tracking-wide"
-                      style={{ fontFeatureSettings: '"liga" off' }}
                     >
-                      {memory.title}
+                      {mem.title}
                     </h3>
                     <p className="text-sm text-[#A89B8E] leading-relaxed">
-                      {memory.description}
+                      {mem.description}
                     </p>
                   </div>
                 </div>
