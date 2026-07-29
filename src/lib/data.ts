@@ -17,12 +17,12 @@ export interface MemoryItem {
 }
 
 export const DEFAULT_MEMORIES: MemoryItem[] = [
-  { key: "first-victory", title: "First Victory", date: "March 2025", description: "Our first clan battle win — the rebellion announced itself to the server.", image: null },
-  { key: "dragon-conquest", title: "Dragon Conquest", date: "May 2025", description: "Together we felled the Ender Dragon for the first time as a clan.", image: null },
-  { key: "alliance-summit", title: "Alliance Summit", date: "July 2025", description: "Forged powerful alliances that shaped the future of our realm.", image: null },
-  { key: "championship-glory", title: "Championship Glory", date: "September 2025", description: "xRebelKing claimed the top spot in the server-wide PvP tournament.", image: null },
-  { key: "the-great-build", title: "The Great Build", date: "November 2025", description: "Completed the Grand Rebel Fortress — our legendary base.", image: null },
-  { key: "raid-victory", title: "Raid Victory", date: "January 2026", description: "An epic 10v10 raid victory that cemented our dominance.", image: null },
+  { key: "first-victory", title: "", date: "March 2025", description: "", image: null },
+  { key: "dragon-conquest", title: "", date: "May 2025", description: "", image: null },
+  { key: "alliance-summit", title: "", date: "July 2025", description: "", image: null },
+  { key: "championship-glory", title: "", date: "September 2025", description: "", image: null },
+  { key: "the-great-build", title: "", date: "November 2025", description: "", image: null },
+  { key: "raid-victory", title: "", date: "January 2026", description: "", image: null },
 ];
 
 const MEMORIES_CACHE_KEY = "rebel-clan-memories";

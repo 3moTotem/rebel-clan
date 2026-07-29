@@ -87,7 +87,7 @@ export default function ClanMemories() {
                       {mem.image ? (
                         <img
                           src={mem.image}
-                          alt={mem.title}
+                          alt=""
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (

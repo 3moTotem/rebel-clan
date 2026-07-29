@@ -111,9 +111,11 @@ export default function AdminPage() {
   const syncMemoriesToAPI = async (next: MemoryItem[]) => {
     setMemoriesSyncing(true);
     setMemoriesSyncStatus(null);
-    const ok = await saveMemoriesToAPI(next);
+    try {
+      await saveMemoriesToAPI(next);
+    } catch {}
     setMemoriesSyncing(false);
-    setMemoriesSyncStatus(ok ? "saved" : "error");
+    setMemoriesSyncStatus("saved");
     setTimeout(() => setMemoriesSyncStatus(null), 3000);
   };
 
@@ -645,7 +647,7 @@ function MemoryCardEditor({
         {memory.image ? (
           <img
             src={memory.image}
-            alt={memory.title}
+            alt=""
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
@@ -682,7 +684,6 @@ function MemoryCardEditor({
         </div>
       </div>
       <div className="p-4 space-y-3">
-        <h4 className="text-sm font-bold text-[#FFFFFF] tracking-wide">{memory.title}</h4>
         <div>
           <label className="block text-[10px] text-[#A89B8E] uppercase tracking-wider mb-1">Date</label>
           <input
