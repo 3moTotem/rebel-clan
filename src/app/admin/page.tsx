@@ -135,8 +135,7 @@ export default function AdminPage() {
       const dataUrl = ev.target?.result as string;
       if (!dataUrl) return;
 
-      // Compress: resize to max 250px width, quality 0.4 (small enough for jsonblob)
-      const compressed = await compressImage(dataUrl, 250, 0.4);
+      const compressed = await compressImage(dataUrl, 500, 0.75);
 
       const next = memoriesRef.current.map((m) => (m.key === key ? { ...m, image: compressed } : m));
       setMemories(next);
